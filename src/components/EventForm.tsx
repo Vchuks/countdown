@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import type { EventFormProps } from "../types/formdata";
 
 const EventForm = ({ prefilled, onSave, onClose }: EventFormProps) => {
-  const [form, setForm] = useState({ title: "", date: "", description: "" });
+  const [form, setForm] = useState(
+    typeof prefilled === "object"
+      ? { ...prefilled }
+      : { title: "", date: "", description: "" },
+  );
   const [submitted, setSubmitted] = useState(false);
   const [animate, setAnimate] = useState<boolean>(false);
 
@@ -40,16 +44,25 @@ const EventForm = ({ prefilled, onSave, onClose }: EventFormProps) => {
           className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!form.title.trim() || !form.date) {
-              alert("Please fill in both the Title and Date.");
-              return;
+            if (form.title !== undefined && form.date !== undefined) {
+              if (!form.title.trim() || !form.date) {
+                alert("Please fill in both the Title and Date.");
+                return;
+              }
+              onSave(
+                {
+                  title: form.title ?? "",
+                  date: form.date ?? "",
+                  description: form.description ?? "",
+                },
+                e,
+              );
+              setSubmitted(true);
+              setTimeout(() => {
+                setSubmitted(false);
+                onClose();
+              }, 500);
             }
-            onSave(form, e);
-            setSubmitted(true);
-            setTimeout(() => {
-              setSubmitted(false)
-              onClose()
-            }, 500);
           }}
         >
           <div>
@@ -59,7 +72,7 @@ const EventForm = ({ prefilled, onSave, onClose }: EventFormProps) => {
             <input
               type="text"
               name="title"
-              value={form.title}
+              value={form.title ?? ""}
               onChange={handleChange}
               placeholder="Give it a name"
               required
@@ -74,7 +87,7 @@ const EventForm = ({ prefilled, onSave, onClose }: EventFormProps) => {
             <input
               type="datetime-local"
               name="date"
-              value={form.date}
+              value={form.date ?? ""}
               onChange={handleChange}
               required
               className={inputClass}
@@ -87,11 +100,10 @@ const EventForm = ({ prefilled, onSave, onClose }: EventFormProps) => {
             </label>
             <textarea
               name="description"
-              value={form.description}
+              value={form.description ?? ""}
               onChange={handleChange}
               placeholder="Enter more details..."
               rows={4}
-              
               className={`${inputClass} resize-none`}
             />
           </div>
@@ -111,11 +123,11 @@ const EventForm = ({ prefilled, onSave, onClose }: EventFormProps) => {
               {prefilled ? "Update" : "Create"}
             </button>
           </div>
-            {submitted && (
-              <p className="text-sm text-center text-green-600 font-medium animate-pulse">
-                Event Added!
-              </p>
-            )}
+          {submitted && (
+            <p className="text-sm text-center text-green-600 font-medium animate-pulse">
+              Event Added!
+            </p>
+          )}
         </form>
       </div>
     </div>

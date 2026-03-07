@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import EventForm from "./components/EventForm";
 import type { EventData, InputData } from "./types/formdata";
+import EventCard from "./components/EventCard";
 
 function App() {
   const [openFormData, setOpenFormData] = useState<EventData | null | string>(
@@ -17,17 +18,33 @@ function App() {
     e: React.SubmitEvent<HTMLFormElement>,
   ) => {
     e.preventDefault();
+    const safeData: InputData = {
+      ...data,
+      title: data.title ?? "",
+      date: data.date ?? "",
+      description: data.description ?? "",
+    };
     if (openFormData === "new") {
-      const newData = { ...data, id: Date.now().toString() };
+      const newData = {
+        ...safeData,
+        id: Date.now().toString(),
+        date: new Date(safeData.date).toISOString(),
+      };
       setAllEvents((prev) => [...prev, newData]);
     } else {
       const updatedEvents = allEvents.map((event) =>
         event.id === (openFormData as EventData).id
-          ? { ...event, ...data }
+          ? {
+              ...event,
+              title: safeData.title,
+              date: new Date(safeData.date).toISOString(),
+              description: safeData.description,
+            }
           : event,
       );
       setAllEvents(updatedEvents);
     }
+    setOpenFormData(null);
   };
 
   const saveToLocalStorage = () => {
@@ -37,6 +54,12 @@ function App() {
   useEffect(() => {
     saveToLocalStorage();
   }, [allEvents]);
+
+  const handleDelete = (id: string | undefined) => {
+    if (!id) return;
+    const filteredEvents = allEvents.filter((event) => event.id !== id);
+    setAllEvents(filteredEvents);
+  };
 
   return (
     <div className="bg-[rgba(8,11,18,0.85)] p-10 min-h-dvh">
@@ -59,19 +82,12 @@ function App() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {allEvents.map((event) => (
-              <div
+              <EventCard
                 key={event.id}
-                className="bg-[#353232] border border-[#EEEEEE] rounded-lg shadow-sm shadow-white p-6 cursor-pointer transition hover:shadow-lg"
-                onClick={() => setOpenFormData(event)}
-              >
-                <h3 className="text-xl font-bold mb-2">{event.title}</h3>
-                <p className="text-sm text-gray-200 mb-4">
-                  {new Date(event.date).toLocaleDateString()}
-                </p>
-                {event.description && (
-                  <p className="text-sm text-gray-800">{event.description}</p>
-                )}
-              </div>
+                event={event}
+                onEdit={() => setOpenFormData(event)}
+                onDelete={() => handleDelete(event.id)}
+              />
             ))}
           </div>
         )}

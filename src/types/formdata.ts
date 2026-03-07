@@ -13,3 +13,15 @@ export interface EventFormProps {
   onSave: (data: InputData, e: React.SubmitEvent<HTMLFormElement>) => void;
   onClose: () => void;
 }
+
+export interface CountDownData {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+export interface CountDownProps {
+  event: EventData;
+  onEdit: () => void;
+  onDelete: () => void;
+}

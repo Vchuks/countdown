@@ -2,6 +2,8 @@
 
 An application where you can add events and you can see the day, time, hour or seconds left before the events.
 
+**[Live Demo →](https://countdown-mu-bice.vercel.app/)**
+
 ## Core features
 
 - Create countdowns with name, date/time, and optional description
